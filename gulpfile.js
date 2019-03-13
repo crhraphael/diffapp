@@ -16,6 +16,12 @@ gulp.task('i18nDownloadJS', async function() {
             resolve(ans);
         }))
     }
+
+    /**
+     * Chaves que o usuário optou por importar novamente.
+     */
+    var modifiedKeys = [];
+
     try {
         var localeResponse = await axios.get(envJS.PHRASEAPP_API + '/projects/' + envJS.PHRASEAPP_SITE_REPO_ID + '/locales', {
             params: {
@@ -47,23 +53,28 @@ gulp.task('i18nDownloadJS', async function() {
                 var keysLength = keys.length;
                 for(var j = 0; j < keysLength; j++) {
                     var currentKey = keys[j];
-
+                    
                     if(translationSource.hasOwnProperty(currentKey)) {
-                        if(translationSource[currentKey] !== transResponse[currentKey]) {
+                        if(translationSource[currentKey] !== transResponse[currentKey]
+                            && !modifiedKeys.includes(currentKey)) {
                             //DIFF
                             console.log('O valor de ' + currentKey + ' foi modificado desde a última importação.');
                             var ans = await askQuestion('Atualizar chave? (Y, n)')
-                            if(ans === 'Y') {
+                            if(ans === 'Y' || ans === '') {
                                 translationSource[currentKey] = transResponse[currentKey];
-                            }
-                        
+                                modifiedKeys.push(currentKey)
+                            }                        
                         }
                     } else {
                         //NEW
-                        console.log('Nova chave encontrada: ' + currentKey + '.');
-                        var ans = await askQuestion('Importar chave? (Y, n)')
-                        if(ans === 'Y' || ans === '') {
-                            translationSource[currentKey] = transResponse[currentKey];
+                        if(!modifiedKeys.includes(currentKey)) {
+                            console.log('Nova chave encontrada: ' + currentKey + '.');
+                            var ans = await askQuestion('Importar chave? (Y, n)')
+                            if(ans === 'Y' || ans === '') {
+                                translationSource[currentKey] = transResponse[currentKey];
+                                modifiedKeys.push(currentKey)
+                            
+                            }
                         }
                         
                     }
