@@ -18,7 +18,7 @@ gulp.task('i18nDownloadJS', async function() {
     }
 
     /**
-     * Chaves que o usuário optou por importar novamente.
+     * Chaves que o usuário optou por importar/alterar.
      */
     var modifiedKeys = [];
 
